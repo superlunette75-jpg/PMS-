@@ -300,7 +300,13 @@
         if (!login) return toast("Indiquez d'abord un identifiant");
         var p = prompt("Mot de passe pour " + name + " (identifiant : " + login + ") :"); if (!p) return;
         b.disabled = true;
-        api("/account", { staffId: tr.getAttribute("data-staff"), username: login, password: p }).then(function (r) { toast("Compte prêt : " + r.login); b.disabled = false; loadCache(); }, function (e) { b.disabled = false; fail(e); });
+        var sid = tr.getAttribute("data-staff");
+        api("/account", { staffId: sid, username: login, password: p }).then(function (r) {
+          toast("Compte prêt : " + r.login); b.disabled = false; loadCache();
+          if (sid === me.id) { /* son propre mot de passe : la session est invalidée, on se reconnecte */
+            sb.auth.signInWithPassword({ email: toEmail(login), password: p }).then(function (q) { if (q.error) loginView("Reconnectez-vous avec votre nouveau mot de passe."); });
+          }
+        }, function (e) { b.disabled = false; fail(e); });
       });
     });
     document.getElementById("addStaff").addEventListener("submit", function (e) {
