@@ -13,35 +13,35 @@
       you: "Vos informations", name: "Nom", namePh: "Votre nom", suite: "Suite", suitePh: "Nom ou numéro de la suite",
       sections: ["Spa", "Dîner", "Conciergerie"], spaWhen: "Date souhaitée", time: "Heure", dinnerDate: "Date du dîner", dinnerTime: "Heure souhaitée", guests: "Convives", allergies: "Allergies, préférences", allergiesPh: "Allergies, régime, occasion particulière",
       request: "Votre demande", pick: "Choisir", reqDate: "Date souhaitée", people: "Personnes", details: "Précisions", detailsPh: "Ce que vous aimeriez, vos horaires, vos questions",
-      notes: "Autre chose ?", notesPh: "Une précision pour l'équipe", total: "Total spa estimé", items: "demandes", send: "Envoyer sur WhatsApp",
+      notes: "Autre chose ?", notesPh: "Une précision pour l'équipe", total: "Total estimé", items: "demandes", send: "Envoyer sur WhatsApp",
       errName: "Indiquez votre nom.", errEmpty: "Choisissez au moins un soin, un dîner ou une demande.", errDinner: "Indiquez la date du dîner.",
       disclaimer: "Le total est indicatif. L'équipe confirme chaque réservation sur WhatsApp.", add: "Ajouter", remove: "Retirer" },
     en: { title: "Riad Kasbah La Moun | Book", header: "Booking", eyebrow: "Spa, dinner and concierge", h1: "Book", intro: "Choose, then send: your request opens in WhatsApp, ready to go to the team.",
       you: "Your details", name: "Name", namePh: "Your name", suite: "Suite", suitePh: "Suite name or number",
       sections: ["Spa", "Dinner", "Concierge"], spaWhen: "Preferred date", time: "Time", dinnerDate: "Dinner date", dinnerTime: "Preferred time", guests: "Guests", allergies: "Allergies, preferences", allergiesPh: "Allergies, diet, special occasion",
       request: "Your request", pick: "Select", reqDate: "Preferred date", people: "People", details: "Details", detailsPh: "What you would like, your timing, your questions",
-      notes: "Anything else?", notesPh: "A note for the team", total: "Estimated spa total", items: "requests", send: "Send on WhatsApp",
+      notes: "Anything else?", notesPh: "A note for the team", total: "Estimated total", items: "requests", send: "Send on WhatsApp",
       errName: "Please enter your name.", errEmpty: "Choose at least one treatment, a dinner or a request.", errDinner: "Please enter the dinner date.",
       disclaimer: "The total is an estimate. The team confirms each booking on WhatsApp.", add: "Add", remove: "Remove" },
     es: { title: "Riad Kasbah La Moun | Reservar", header: "Reserva", eyebrow: "Spa, cena y conserjería", h1: "Reservar", intro: "Elige y envía: tu solicitud se abre en WhatsApp, lista para enviarla al equipo.",
       you: "Tus datos", name: "Nombre", namePh: "Tu nombre", suite: "Suite", suitePh: "Nombre o número de la suite",
       sections: ["Spa", "Cena", "Conserjería"], spaWhen: "Fecha deseada", time: "Hora", dinnerDate: "Fecha de la cena", dinnerTime: "Hora deseada", guests: "Comensales", allergies: "Alergias, preferencias", allergiesPh: "Alergias, dieta, ocasión especial",
       request: "Tu solicitud", pick: "Elegir", reqDate: "Fecha deseada", people: "Personas", details: "Detalles", detailsPh: "Lo que te gustaría, tus horarios, tus preguntas",
-      notes: "¿Algo más?", notesPh: "Una nota para el equipo", total: "Total spa estimado", items: "solicitudes", send: "Enviar por WhatsApp",
+      notes: "¿Algo más?", notesPh: "Una nota para el equipo", total: "Total estimado", items: "solicitudes", send: "Enviar por WhatsApp",
       errName: "Indica tu nombre.", errEmpty: "Elige al menos un tratamiento, una cena o una solicitud.", errDinner: "Indica la fecha de la cena.",
       disclaimer: "El total es orientativo. El equipo confirma cada reserva por WhatsApp.", add: "Añadir", remove: "Quitar" },
     de: { title: "Riad Kasbah La Moun | Buchen", header: "Buchung", eyebrow: "Spa, Abendessen und Concierge", h1: "Buchen", intro: "Auswählen und senden: Ihre Anfrage öffnet sich in WhatsApp, bereit für das Team.",
       you: "Ihre Angaben", name: "Name", namePh: "Ihr Name", suite: "Suite", suitePh: "Name oder Nummer der Suite",
       sections: ["Spa", "Abendessen", "Concierge"], spaWhen: "Gewünschtes Datum", time: "Uhrzeit", dinnerDate: "Datum des Abendessens", dinnerTime: "Gewünschte Uhrzeit", guests: "Personen", allergies: "Allergien, Vorlieben", allergiesPh: "Allergien, Ernährung, besonderer Anlass",
       request: "Ihre Anfrage", pick: "Auswählen", reqDate: "Gewünschtes Datum", people: "Personen", details: "Details", detailsPh: "Ihre Wünsche, Zeiten, Fragen",
-      notes: "Sonst noch etwas?", notesPh: "Eine Notiz für das Team", total: "Geschätzter Spa-Betrag", items: "Anfragen", send: "Per WhatsApp senden",
+      notes: "Sonst noch etwas?", notesPh: "Eine Notiz für das Team", total: "Geschätzter Betrag", items: "Anfragen", send: "Per WhatsApp senden",
       errName: "Bitte geben Sie Ihren Namen ein.", errEmpty: "Wählen Sie mindestens eine Behandlung, ein Abendessen oder eine Anfrage.", errDinner: "Bitte geben Sie das Datum des Abendessens ein.",
       disclaimer: "Der Betrag ist ein Richtwert. Das Team bestätigt jede Buchung per WhatsApp.", add: "Hinzufügen", remove: "Entfernen" },
     ar: { title: "رياض قصبة لا مون | الحجز", header: "الحجز", eyebrow: "السبا، العشاء والكونسيرج", h1: "احجز", intro: "اختاروا ثم أرسلوا: يُفتح طلبكم في واتساب جاهزاً للإرسال إلى الفريق.",
       you: "معلوماتكم", name: "الاسم", namePh: "اسمكم", suite: "الجناح", suitePh: "اسم الجناح أو رقمه",
       sections: ["السبا", "العشاء", "الكونسيرج"], spaWhen: "التاريخ المفضل", time: "الوقت", dinnerDate: "تاريخ العشاء", dinnerTime: "الوقت المفضل", guests: "عدد الأشخاص", allergies: "الحساسية والتفضيلات", allergiesPh: "حساسية، نظام غذائي، مناسبة خاصة",
       request: "طلبكم", pick: "اختر", reqDate: "التاريخ المفضل", people: "الأشخاص", details: "تفاصيل", detailsPh: "ما ترغبون فيه، مواعيدكم، أسئلتكم",
-      notes: "شيء آخر؟", notesPh: "ملاحظة للفريق", total: "مجموع السبا التقريبي", items: "طلبات", send: "إرسال عبر واتساب",
+      notes: "شيء آخر؟", notesPh: "ملاحظة للفريق", total: "المجموع التقريبي", items: "طلبات", send: "إرسال عبر واتساب",
       errName: "يرجى كتابة اسمكم.", errEmpty: "اختاروا جلسة أو عشاء أو طلباً على الأقل.", errDinner: "يرجى تحديد تاريخ العشاء.",
       disclaimer: "المجموع تقريبي. يؤكد الفريق كل حجز عبر واتساب.", add: "إضافة", remove: "حذف" }
   };
@@ -110,6 +110,8 @@
     }, 250);
   }
   function count() { return spaCount() + (state.dinnerOn ? 1 : 0) + (state.request !== "" ? 1 : 0); }
+  function dinnerTotal() { return state.dinnerOn ? state.guests * RT.DINNER_MAD : 0; }
+  function grandTotal() { return spaTotal() + dinnerTotal(); }
   function money(v, lang) { return v.toLocaleString("fr-FR").replace(/ /g, " ") + " " + RT.UI[lang].mad; }
 
   function stepper(attr, value, min, t) {
@@ -139,7 +141,7 @@
     else h += '<div class="fields two">' + field(t.spaWhen, input("spaDate", "date")) + field(t.time, input("spaTime", "time")) + "</div></div>";
 
     h += '<div class="category" id="diner"><p class="eyebrow">03</p><h2>' + esc(t.sections[1]) + "</h2>" +
-      '<label class="switch-row"><span><strong>' + esc(t.sections[1]) + "</strong><small>" + esc(t.dinnerDate) + '</small></span><input type="checkbox" data-dinner' + (state.dinnerOn ? " checked" : "") + '><i aria-hidden="true"></i></label>' +
+      '<label class="switch-row"><span><strong>' + esc(t.sections[1]) + "</strong><small>" + RT.DINNER_MAD + " " + esc(RT.UI[lang].mad) + " " + esc(RT.UI[lang].perPerson) + '</small></span><input type="checkbox" data-dinner' + (state.dinnerOn ? " checked" : "") + '><i aria-hidden="true"></i></label>' +
       '<div class="reveal" data-dinner-block' + (state.dinnerOn ? "" : " hidden") + '><div class="fields two">' + field(t.dinnerDate, input("dinnerDate", "date")) + field(t.dinnerTime, input("dinnerTime", "time")) +
       '<div class="field"><span>' + esc(t.guests) + "</span>" + stepper('data-count="guests"', state.guests, 1, t) + "</div></div>" +
       '<div class="fields">' + field(t.allergies, textarea("allergies", t.allergiesPh)) + "</div></div></div>";
@@ -152,7 +154,7 @@
     h += '<div class="category"><p class="eyebrow">05</p><h2>' + esc(t.notes) + '</h2><div class="fields">' + field(t.notes, textarea("notes", t.notesPh), "sr-label") + '</div><p class="note">' + esc(t.disclaimer) + "</p></div>";
     h += "</form>";
 
-    h += '<div class="submit-bar"><div><span data-count-label>' + count() + " " + esc(t.items) + "</span><strong>" + esc(t.total) + ' : <b data-total>' + money(spaTotal(), lang) + '</b></strong><em class="form-error" data-error role="alert">' + esc(state.error) + "</em></div>" +
+    h += '<div class="submit-bar"><div><span data-count-label>' + count() + " " + esc(t.items) + "</span><strong>" + esc(t.total) + ' : <b data-total>' + money(grandTotal(), lang) + '</b></strong><em class="form-error" data-error role="alert">' + esc(state.error) + "</em></div>" +
       '<button type="button" class="button button-solid" data-send' + (state.busy ? " disabled" : "") + ">" + esc(state.busy ? RT.UI[lang].sending : RT.API.base ? RT.UI[lang].sendApi : t.send) + "</button></div>";
     h += '<div class="bottom-action"><div class="button-stack">' + RT.contactButtons(lang) + "</div></div>";
     return h;
@@ -171,7 +173,7 @@
       M.push("Total spa estimé : " + spaTotal() + " MAD");
     }
     if (state.dinnerOn) {
-      M.push("", "*DÎNER*", "Date : " + when(state.dinnerDate, state.dinnerTime), "Convives : " + state.guests);
+      M.push("", "*DÎNER*", "Date : " + when(state.dinnerDate, state.dinnerTime), "Convives : " + state.guests + " x " + RT.DINNER_MAD + " MAD = " + dinnerTotal() + " MAD");
       if (state.allergies.trim()) M.push("Allergies, préférences : " + state.allergies.trim());
     }
     if (state.request !== "") {
@@ -189,7 +191,7 @@
     var lang = RT.getLang(), t = T[lang];
     var c = root.querySelector("[data-count-label]"), tt = root.querySelector("[data-total]"), e = root.querySelector("[data-error]"), s = root.querySelector("[data-send]");
     if (c) c.textContent = count() + " " + t.items;
-    if (tt) tt.textContent = money(spaTotal(), lang);
+    if (tt) tt.textContent = money(grandTotal(), lang);
     if (e) e.textContent = state.error;
     if (s) { s.disabled = state.busy; s.textContent = state.busy ? RT.UI[lang].sending : RT.API.base ? RT.UI[lang].sendApi : t.send; }
   }
@@ -204,7 +206,7 @@
       GROUPS.forEach(function (g) { g.items.forEach(function (id) { var q = state.qty[id]; if (q) items.push({ key: id, labelFr: ITEMS[id].labelFr, qty: q, unitPriceMad: ITEMS[id].price, durationMin: ITEMS[id].min }); }); });
       list.push(mk("spa", items, { date: state.spaDate, slot: state.spaSlot, people: 2 }));
     }
-    if (state.dinnerOn) list.push(mk("dinner", [], { date: state.dinnerDate, time: state.dinnerTime, guests: state.guests, allergies: state.allergies.trim() }));
+    if (state.dinnerOn) list.push(mk("dinner", [{ key: "dinner", labelFr: "Dîner à la Kasbah", qty: state.guests, unitPriceMad: RT.DINNER_MAD }], { date: state.dinnerDate, time: state.dinnerTime, guests: state.guests, allergies: state.allergies.trim() }));
     if (state.request !== "") {
       var r = REQUESTS[state.request];
       list.push(mk("concierge", [], { requestId: r.id, labelFr: r.t.fr, date: state.reqDate, people: state.people, details: state.details.trim() }));

@@ -70,3 +70,6 @@ Refuser → le client suit le statut dans « Mon séjour » → rappels automati
 ## 5. Dépôts GitHub
 - `superlunette75-jpg/PMS-` : tout le projet (ce dépôt).
 - `superlunette75-jpg/Lamoun-ekip` : le dossier `admin/` seul, relié à Netlify (site lamoun-equip.netlify.app, répertoire de publication `/`, pas de build). Après un commit sur `main` ici, `scripts/push-admin.sh` y pousse la nouvelle version.
+- `superlunette75-jpg/Lamoun-guide` : le dossier `guide/` seul, à relier au projet Netlify du guide (répertoire de publication `/`, pas de build). `scripts/push-guide.sh` y pousse la nouvelle version.
+
+L'appli équipe s'installe comme une appli sur le téléphone : Safari > Partager > Sur l'écran d'accueil (iPhone), ou Chrome > menu > Installer l'application (Android).

@@ -5,7 +5,8 @@
 (function () {
   "use strict";
   var C = window.CONFIG || {};
-  var app = document.getElementById("app"), nav = document.getElementById("nav"), panel = document.getElementById("panel"), toastEl = document.getElementById("toast");
+  var app = document.getElementById("app"), nav = document.getElementById("nav"), tabs = document.getElementById("tabs"), panel = document.getElementById("panel"), toastEl = document.getElementById("toast");
+  var MOBILE = window.matchMedia("(max-width: 700px)");
   if (!C.SUPABASE_URL || !C.SUPABASE_ANON_KEY) { app.innerHTML = '<div class="card">Renseignez <code>assets/config.js</code> (URL et clé anonyme du projet Supabase).</div>'; return; }
   var FN = (C.FUNCTIONS_URL || C.SUPABASE_URL + "/functions/v1").replace(/\/$/, "");
   var sb = window.supabase.createClient(C.SUPABASE_URL, C.SUPABASE_ANON_KEY);
@@ -42,7 +43,7 @@
   function toEmail(u) { u = String(u || "").trim().toLowerCase(); return u.includes("@") ? u : u + "@" + LOGIN_DOMAIN; }
   function shortLogin(email) { email = String(email || ""); return email.endsWith("@" + LOGIN_DOMAIN) ? email.slice(0, -LOGIN_DOMAIN.length - 1) : email; }
   function loginView(msg) {
-    nav.hidden = true;
+    nav.hidden = true; tabs.hidden = true;
     app.innerHTML = '<div class="card login"><h1>Équipe La Moun</h1><p class="muted">Agenda, demandes des clients et réglages du riad. Connectez-vous avec l\'identifiant et le mot de passe donnés par la réception.</p>' +
       '<form id="login" class="order"><label class="f"><span>Identifiant</span><input name="user" required autocomplete="username" autocapitalize="none" placeholder="ex. mouna"></label>' +
       '<label class="f"><span>Mot de passe</span><input type="password" name="password" required autocomplete="current-password"></label>' +
@@ -68,7 +69,7 @@
       if (!session) { loginView(); return; }
       return sb.from("staff").select("*").ilike("email", session.user.email).eq("active", true).maybeSingle().then(function (q) {
         if (q.error || !q.data) { loginView("Ce compte (" + shortLogin(session.user.email) + ") n'est relié à aucun membre de l'équipe. Demandez à la réception."); sb.auth.signOut(); return; }
-        me = q.data; nav.hidden = false;
+        me = q.data; nav.hidden = false; tabs.hidden = false;
         return loadCache().then(function () { route(); listen(); });
       });
     });
@@ -82,7 +83,7 @@
   }
   function countPending() {
     return sb.from("orders").select("id", { count: "exact", head: true }).eq("status", "pending").then(function (r) {
-      var b = document.getElementById("pendingCount"); b.hidden = !r.count; b.textContent = r.count || "";
+      [document.getElementById("pendingCount"), document.getElementById("pendingTab")].forEach(function (b) { b.hidden = !r.count; b.textContent = r.count || ""; });
     });
   }
   document.getElementById("logout").addEventListener("click", function () { sb.auth.signOut().then(function () { me = null; location.hash = ""; loginView(); }); });
@@ -103,7 +104,8 @@
     var v = (location.hash || "#agenda").slice(1).split("/")[0];
     if (!{ agenda: 1, demandes: 1, clients: 1, reglages: 1, aide: 1 }[v]) v = "agenda";
     current = v; closePanel();
-    nav.querySelectorAll("a[data-view]").forEach(function (a) { a.classList.toggle("on", a.getAttribute("data-view") === v); });
+    document.querySelectorAll("#nav a[data-view], #tabs a[data-view]").forEach(function (a) { a.classList.toggle("on", a.getAttribute("data-view") === v); });
+    window.scrollTo(0, 0);
     ({ agenda: agenda, demandes: demandes, clients: clients, reglages: reglages, aide: aide })[v]();
   }
   window.addEventListener("hashchange", route);
@@ -119,8 +121,9 @@
       '<div id="cal"></div>';
     var el = document.getElementById("cal");
     cal = new FullCalendar.Calendar(el, {
-      locale: "fr", timeZone: TZ, initialView: window.innerWidth < 700 ? "listWeek" : "timeGridWeek", height: "auto", nowIndicator: true, firstDay: 1, slotMinTime: "06:00:00", slotMaxTime: "24:00:00",
-      headerToolbar: { left: "prev,next today", center: "title", right: "timeGridDay,timeGridWeek,dayGridMonth,listWeek" },
+      locale: "fr", timeZone: TZ, initialView: MOBILE.matches ? "listWeek" : "timeGridWeek", height: "auto", nowIndicator: true, firstDay: 1, slotMinTime: "06:00:00", slotMaxTime: "24:00:00",
+      headerToolbar: MOBILE.matches ? { left: "prev,next", center: "title", right: "listWeek,timeGridDay,dayGridMonth" } : { left: "prev,next today", center: "title", right: "timeGridDay,timeGridWeek,dayGridMonth,listWeek" },
+      buttonText: { today: "Aujourd'hui", day: "Jour", week: "Semaine", month: "Mois", list: "Liste" }, noEventsContent: "Rien de prévu sur cette période",
       events: function (info, ok, ko) {
         var q = sb.from("events").select("*, orders(short_id, kind, status, guests(first_name, last_name, phone_e164), stays(suite)), resources(name), staff(name)")
           .gte("starts_at", info.start.toISOString()).lte("starts_at", info.end.toISOString());
@@ -242,11 +245,11 @@
   /* ---------- Clients ---------- */
   function clients() {
     var d = today();
-    app.innerHTML = '<div class="row between"><h1>Clients</h1><form id="search" class="row"><input name="q" placeholder="Nom ou téléphone" style="font:inherit;font-size:16px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px"><button class="btn" type="submit">Chercher</button></form></div><div id="clist"><p class="muted">Chargement…</p></div>';
+    app.innerHTML = '<div class="row between"><h1>Clients</h1><form id="search" class="row" style="flex:1;min-width:220px"><input name="q" placeholder="Nom ou téléphone" style="flex:1;min-width:0;font:inherit;font-size:16px;min-height:44px;padding:8px 10px;border:1px solid var(--line-strong);border-radius:6px"><button class="btn" type="submit">Chercher</button></form></div><div id="clist"><p class="muted">Chargement…</p></div>';
     function show(title, rows) {
-      return "<h2>" + title + " (" + rows.length + ")</h2>" + (rows.length ? "<div class='card'><table><thead><tr><th>Client</th><th>Séjour</th><th>Suite</th><th>Pers.</th><th>Transfert</th><th>Contact</th></tr></thead><tbody>" + rows.map(function (s) {
+      return "<h2>" + title + " (" + rows.length + ")</h2>" + (rows.length ? "<div class='card'><table class='stack'><thead><tr><th>Client</th><th>Séjour</th><th>Suite</th><th>Pers.</th><th>Transfert</th><th>Contact</th></tr></thead><tbody>" + rows.map(function (s) {
         var g = s.guests || {};
-        return "<tr><td>" + esc([g.first_name, g.last_name].filter(Boolean).join(" ")) + "<br><span class='small muted'>" + esc(g.nationality || "") + (g.lang && g.lang !== "fr" ? " · " + esc(g.lang) : "") + "</span></td><td>" + fmtDay(s.arrival) + " → " + fmtDay(s.departure) + (s.checkout_time ? "<br><span class='small muted'>départ " + String(s.checkout_time).slice(0, 5) + "</span>" : "") + "</td><td>" + esc(s.suite || "—") + "</td><td>" + s.people + "</td><td>" + esc({ yes: "souhaité", no: "non", maybe: "?" }[s.transfer_wish] || "—") + (s.flight_out ? "<br><span class='small muted'>vol " + String(s.flight_out).slice(0, 5) + "</span>" : "") + "</td><td>" + (g.phone_e164 ? '<a href="' + wa(g.phone_e164) + '" target="_blank" rel="noreferrer">' + esc(g.phone_e164) + "</a>" : "") + (g.email ? "<br><span class='small'>" + esc(g.email) + "</span>" : "") + "</td></tr>";
+        return "<tr><td data-label='Client'>" + esc([g.first_name, g.last_name].filter(Boolean).join(" ")) + "<br><span class='small muted'>" + esc(g.nationality || "") + (g.lang && g.lang !== "fr" ? " · " + esc(g.lang) : "") + "</span></td><td data-label='Séjour'>" + fmtDay(s.arrival) + " → " + fmtDay(s.departure) + (s.checkout_time ? "<br><span class='small muted'>départ " + String(s.checkout_time).slice(0, 5) + "</span>" : "") + "</td><td data-label='Suite'>" + esc(s.suite || "—") + "</td><td data-label='Personnes'>" + s.people + "</td><td data-label='Transfert'>" + esc({ yes: "souhaité", no: "non", maybe: "?" }[s.transfer_wish] || "—") + (s.flight_out ? "<br><span class='small muted'>vol " + String(s.flight_out).slice(0, 5) + "</span>" : "") + "</td><td data-label='Contact'>" + (g.phone_e164 ? '<a href="' + wa(g.phone_e164) + '" target="_blank" rel="noreferrer">' + esc(g.phone_e164) + "</a>" : "") + (g.email ? "<br><span class='small'>" + esc(g.email) + "</span>" : "") + "</td></tr>";
       }).join("") + "</tbody></table></div>" : "<p class='muted'>Personne.</p>");
     }
     var sel = "*, guests(*)";
@@ -267,19 +270,20 @@
   function reglages() {
     var s = cache.settings, bot = s.telegram_bot_username || "<bot>";
     var h = "<h1>Réglages</h1>";
+    h += '<div class="card"><h2>Mon compte</h2><p class="small muted">Connecté comme <b>' + esc(me.name) + '</b> (' + esc(shortLogin(session.user.email)) + ').</p><div class="row"><button class="btn" id="pwd2">Changer mon mot de passe</button><button class="btn" id="logout2">Quitter</button></div></div>';
     h += '<div class="card"><h2>Équipe</h2><p class="small muted">Pour chaque personne : un identifiant et un mot de passe pour cette appli (bouton « Mot de passe »), et un lien Telegram à ouvrir une fois pour recevoir ses demandes et rappels en privé.</p>' +
-      '<table><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>Identifiant (appli)</th><th>Telegram</th><th>Actif</th><th></th></tr></thead><tbody>' +
+      '<table class="stack"><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>Identifiant (appli)</th><th>Telegram</th><th>Actif</th><th></th></tr></thead><tbody>' +
       cache.staff.map(function (st) {
-        return '<tr data-staff="' + st.id + '"><td><input name="name" value="' + esc(st.name) + '"></td><td><select name="role">' + Object.keys(ROLE).map(function (r) { return '<option value="' + r + '"' + (st.role === r ? " selected" : "") + ">" + ROLE[r] + "</option>"; }).join("") + '</select></td><td><input name="phone" value="' + esc(st.phone || "") + '"></td>' +
-          '<td><input name="login" value="' + esc(shortLogin(st.email || "")) + '" placeholder="ex. mouna" autocapitalize="none"><button class="btn sm" data-set-password style="margin-top:4px">Mot de passe</button></td>' +
-          "<td>" + (st.telegram_chat_id ? "✅ lié" : '<a class="small" href="https://t.me/' + esc(bot) + "?start=" + esc(st.link_code) + '" target="_blank" rel="noreferrer">lien de liaison</a><br><code class="small">/start ' + esc(st.link_code) + "</code>") + '</td><td><input type="checkbox" name="active"' + (st.active ? " checked" : "") + '></td><td><button class="btn sm" data-save-staff>OK</button><br><a class="small" href="' + FN + "/ical/" + esc(st.ical_token) + '.ics">iCal</a></td></tr>';
+        return '<tr data-staff="' + st.id + '"><td data-label="Nom"><input name="name" value="' + esc(st.name) + '"></td><td data-label="Rôle"><select name="role">' + Object.keys(ROLE).map(function (r) { return '<option value="' + r + '"' + (st.role === r ? " selected" : "") + ">" + ROLE[r] + "</option>"; }).join("") + '</select></td><td data-label="Téléphone"><input name="phone" value="' + esc(st.phone || "") + '"></td>' +
+          '<td data-label="Identifiant"><input name="login" value="' + esc(shortLogin(st.email || "")) + '" placeholder="ex. mouna" autocapitalize="none"><button class="btn sm" data-set-password style="margin-top:4px">Mot de passe</button></td>' +
+          "<td data-label='Telegram'>" + (st.telegram_chat_id ? "✅ lié" : '<a class="small" href="https://t.me/' + esc(bot) + "?start=" + esc(st.link_code) + '" target="_blank" rel="noreferrer">lien de liaison</a><br><code class="small">/start ' + esc(st.link_code) + "</code>") + '</td><td data-label="Actif"><input type="checkbox" name="active"' + (st.active ? " checked" : "") + '></td><td><button class="btn sm" data-save-staff>OK</button><br><a class="small" href="' + FN + "/ical/" + esc(st.ical_token) + '.ics">iCal</a></td></tr>';
       }).join("") + "</tbody></table>" +
       '<form id="addStaff" class="inline" style="margin-top:12px"><label class="f"><span>Nom</span><input name="name" required></label><label class="f"><span>Rôle</span><select name="role">' + Object.keys(ROLE).map(function (r) { return '<option value="' + r + '">' + ROLE[r] + "</option>"; }).join("") + '</select></label><label class="f"><span>Téléphone</span><input name="phone"></label><button class="btn solid" type="submit">Ajouter</button></form></div>';
     h += '<div class="card"><h2>Ressources</h2><p class="small muted">Exclusif : un seul créneau à la fois (spa, guide). Sinon, la capacité limite le nombre de personnes en même temps (table). Marge : minutes bloquées après chaque créneau.</p>' +
-      '<table><thead><tr><th>Nom</th><th>Type</th><th>Exclusif</th><th>Capacité</th><th>Marge</th><th>Personne par défaut</th><th>Actif</th><th></th></tr></thead><tbody>' +
+      '<table class="stack"><thead><tr><th>Nom</th><th>Type</th><th>Exclusif</th><th>Capacité</th><th>Marge</th><th>Personne par défaut</th><th>Actif</th><th></th></tr></thead><tbody>' +
       cache.resources.map(function (r) {
-        return '<tr data-res="' + r.id + '"><td><input name="name" value="' + esc(r.name) + '"></td><td>' + esc(RKIND[r.kind]) + '</td><td><input type="checkbox" name="exclusive"' + (r.exclusive ? " checked" : "") + '></td><td><input type="number" name="capacity" value="' + r.capacity + '" min="1"></td><td><input type="number" name="buffer_min" value="' + r.buffer_min + '" min="0" step="5"></td>' +
-          '<td><select name="default_staff_id"><option value="">—</option>' + cache.staff.map(function (st) { return '<option value="' + st.id + '"' + (r.default_staff_id === st.id ? " selected" : "") + ">" + esc(st.name) + "</option>"; }).join("") + '</select></td><td><input type="checkbox" name="active"' + (r.active ? " checked" : "") + '></td><td><button class="btn sm" data-save-res>OK</button><br><button class="btn sm" data-hours="' + r.id + '">Horaires</button></td></tr>';
+        return '<tr data-res="' + r.id + '"><td data-label="Nom"><input name="name" value="' + esc(r.name) + '"></td><td data-label="Type">' + esc(RKIND[r.kind]) + '</td><td data-label="Exclusif"><input type="checkbox" name="exclusive"' + (r.exclusive ? " checked" : "") + '></td><td data-label="Capacité"><input type="number" name="capacity" value="' + r.capacity + '" min="1"></td><td data-label="Marge (min)"><input type="number" name="buffer_min" value="' + r.buffer_min + '" min="0" step="5"></td>' +
+          '<td data-label="Par défaut"><select name="default_staff_id"><option value="">—</option>' + cache.staff.map(function (st) { return '<option value="' + st.id + '"' + (r.default_staff_id === st.id ? " selected" : "") + ">" + esc(st.name) + "</option>"; }).join("") + '</select></td><td data-label="Actif"><input type="checkbox" name="active"' + (r.active ? " checked" : "") + '></td><td><button class="btn sm" data-save-res>OK</button><br><button class="btn sm" data-hours="' + r.id + '">Horaires</button></td></tr>';
       }).join("") + "</tbody></table></div>";
     h += '<div class="card"><h2>Telegram et rappels</h2><form id="settingsF" class="inline">' +
       [["telegram_bot_username", "Nom du bot (sans @)"], ["telegram_group_id", "Id du groupe (/id dans le groupe)"], ["topic_transfer", "Sujet Transferts"], ["topic_spa", "Sujet Spa"], ["topic_dinner", "Sujet Table"], ["topic_concierge", "Sujet Conciergerie"], ["topic_checkin", "Sujet Check-ins"], ["reminder_eve_hour", "Heure du récap du soir"], ["reminder_before_min", "Rappel avant (min)"], ["apps_script_url", "URL Apps Script (Google Sheet)"]].map(function (x) {
@@ -287,6 +291,8 @@
       }).join("") + '<button class="btn solid" type="submit">Enregistrer</button></form>' +
       '<p class="small muted" style="margin-top:10px">Calendrier maître (iCal, à ajouter sur un téléphone ou dans Google Agenda) : <code>' + FN + "/ical/" + esc(s.master_ical_token || "") + ".ics</code></p></div>";
     app.innerHTML = h;
+    document.getElementById("pwd2").addEventListener("click", changeMyPassword);
+    document.getElementById("logout2").addEventListener("click", function () { document.getElementById("logout").click(); });
 
     app.querySelectorAll("[data-save-staff]").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -344,9 +350,9 @@
     sb.from("resource_hours").select("*").eq("resource_id", resId).order("weekday").then(function (r) {
       var rows = r.data || [];
       openPanel("<h2>Horaires · " + esc(res.name) + "</h2><p class='small muted'>Un jour sans ligne est fermé. Pas : durée entre deux débuts de créneau proposés au client.</p>" +
-        '<table><thead><tr><th>Jour</th><th>Ouvre</th><th>Ferme</th><th>Pas</th><th></th></tr></thead><tbody id="hrows">' + rows.map(hourRow).join("") + "</tbody></table>" +
+        '<table class="stack"><thead><tr><th>Jour</th><th>Ouvre</th><th>Ferme</th><th>Pas</th><th></th></tr></thead><tbody id="hrows">' + rows.map(hourRow).join("") + "</tbody></table>" +
         '<div class="row" style="margin-top:10px"><button class="btn" id="addHour">Ajouter un jour</button><button class="btn solid" id="saveHours">Enregistrer</button></div>');
-      function hourRow(x) { return '<tr><td><select name="weekday">' + DAYS.map(function (d, i) { return '<option value="' + i + '"' + (x.weekday === i ? " selected" : "") + ">" + d + "</option>"; }).join("") + '</select></td><td><input type="time" name="open" value="' + String(x.open_time).slice(0, 5) + '"></td><td><input type="time" name="close" value="' + String(x.close_time).slice(0, 5) + '"></td><td><input type="number" name="slot" value="' + x.slot_minutes + '" min="15" step="15"></td><td><button class="btn sm" data-del>×</button></td></tr>'; }
+      function hourRow(x) { return '<tr><td data-label="Jour"><select name="weekday">' + DAYS.map(function (d, i) { return '<option value="' + i + '"' + (x.weekday === i ? " selected" : "") + ">" + d + "</option>"; }).join("") + '</select></td><td data-label="Ouvre"><input type="time" name="open" value="' + String(x.open_time).slice(0, 5) + '"></td><td data-label="Ferme"><input type="time" name="close" value="' + String(x.close_time).slice(0, 5) + '"></td><td data-label="Pas (min)"><input type="number" name="slot" value="' + x.slot_minutes + '" min="15" step="15"></td><td><button class="btn sm" data-del>×</button></td></tr>'; }
       document.getElementById("addHour").addEventListener("click", function () { document.getElementById("hrows").insertAdjacentHTML("beforeend", hourRow({ weekday: 1, open_time: "10:00", close_time: "20:00", slot_minutes: 30 })); });
       document.getElementById("hrows").addEventListener("click", function (e) { if (e.target.closest("[data-del]")) e.target.closest("tr").remove(); });
       document.getElementById("saveHours").addEventListener("click", function () {
