@@ -66,3 +66,7 @@ Refuser → le client suit le statut dans « Mon séjour » → rappels automati
 - WhatsApp Business (Cloud API) : confirmation automatique au client quand l'équipe accepte, rappels au client, bot entrant. Le point d'entrée est `applyDecision` dans `supabase/functions/_shared/notify.ts`.
 - Catalogue (prix, soins) édité depuis l'appli équipe au lieu des fichiers `spa.js`, `transfer.js`, `marrakech.js`.
 - Import iCal Booking.com / Airbnb par suite pour afficher l'occupation des chambres dans l'agenda.
+
+## 5. Dépôts GitHub
+- `superlunette75-jpg/PMS-` : tout le projet (ce dépôt).
+- `superlunette75-jpg/Lamoun-ekip` : le dossier `admin/` seul, relié à Netlify (site lamoun-equip.netlify.app, répertoire de publication `/`, pas de build). Après un commit sur `main` ici, `scripts/push-admin.sh` y pousse la nouvelle version.

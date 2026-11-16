@@ -26,6 +26,7 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;p
 td input,td select{font:inherit;font-size:15px;padding:5px 7px;border:1px solid var(--line-strong);border-radius:4px;background:#fff;width:100%;min-width:0}td input[type=checkbox]{width:auto}
 code{font-size:13px;background:#fff;padding:2px 6px;border:1px solid var(--line);border-radius:4px;word-break:break-all}
 .panel{position:fixed;inset:0;z-index:30;background:rgba(31,36,38,.45);display:flex;justify-content:flex-end}
+.panel[hidden],.toast[hidden],#nav[hidden],[hidden]{display:none!important}
 .panel-inner{width:min(460px,100%);height:100%;overflow:auto;background:var(--paper);padding:18px;padding-bottom:calc(18px + env(safe-area-inset-bottom));box-shadow:-8px 0 30px rgba(0,0,0,.15)}
 .panel .close{float:right}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:40;background:var(--slate-deep);color:var(--paper);padding:10px 16px;border-radius:999px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.2)}
