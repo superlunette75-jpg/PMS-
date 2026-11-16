@@ -38,17 +38,28 @@
   function fail(e) { console.error(e); toast(e.message || "Erreur"); }
 
   /* ---------- Connexion ---------- */
+  var LOGIN_DOMAIN = "kasbahlamoun.app";
+  function toEmail(u) { u = String(u || "").trim().toLowerCase(); return u.includes("@") ? u : u + "@" + LOGIN_DOMAIN; }
+  function shortLogin(email) { email = String(email || ""); return email.endsWith("@" + LOGIN_DOMAIN) ? email.slice(0, -LOGIN_DOMAIN.length - 1) : email; }
   function loginView(msg) {
     nav.hidden = true;
-    app.innerHTML = '<div class="card login"><h1>Équipe La Moun</h1><p class="muted">Entrez votre e-mail : vous recevrez un lien de connexion.</p>' +
-      '<form id="login" class="row"><label class="f" style="flex:1"><span>E-mail</span><input type="email" name="email" required autocomplete="email"></label><button class="btn solid" type="submit">Recevoir le lien</button></form>' +
-      (msg ? '<p class="small muted">' + esc(msg) + "</p>" : "") + "</div>";
+    app.innerHTML = '<div class="card login"><h1>Équipe La Moun</h1><p class="muted">Agenda, demandes des clients et réglages du riad. Connectez-vous avec l\'identifiant et le mot de passe donnés par la réception.</p>' +
+      '<form id="login" class="order"><label class="f"><span>Identifiant</span><input name="user" required autocomplete="username" autocapitalize="none" placeholder="ex. mouna"></label>' +
+      '<label class="f"><span>Mot de passe</span><input type="password" name="password" required autocomplete="current-password"></label>' +
+      '<button class="btn solid" type="submit">Se connecter</button></form>' +
+      (msg ? '<p class="small" style="color:var(--no);margin-top:10px">' + esc(msg) + "</p>" : "") + "</div>";
     document.getElementById("login").addEventListener("submit", function (e) {
-      e.preventDefault(); var email = e.target.email.value.trim();
-      sb.auth.signInWithOtp({ email: email, options: { emailRedirectTo: location.origin + location.pathname } }).then(function (r) {
-        if (r.error) return fail(r.error); loginView("Lien envoyé à " + email + ". Ouvrez-le sur cet appareil.");
+      e.preventDefault(); var f = e.target; f.querySelector("button").disabled = true;
+      sb.auth.signInWithPassword({ email: toEmail(f.user.value), password: f.password.value }).then(function (r) {
+        if (r.error) { loginView("Identifiant ou mot de passe incorrect."); return; }
+        boot();
       });
     });
+  }
+  function changeMyPassword() {
+    var p = prompt("Nouveau mot de passe (6 caractères minimum) :"); if (!p) return;
+    if (p.length < 6) return toast("6 caractères minimum");
+    sb.auth.updateUser({ password: p }).then(function (r) { if (r.error) return fail(r.error); toast("Mot de passe changé"); });
   }
 
   function boot() {
@@ -56,7 +67,7 @@
       session = r.data.session;
       if (!session) { loginView(); return; }
       return sb.from("staff").select("*").ilike("email", session.user.email).eq("active", true).maybeSingle().then(function (q) {
-        if (q.error || !q.data) { loginView("Ce compte (" + session.user.email + ") n'est pas dans l'équipe. Demandez à la réception de l'ajouter dans Réglages."); return; }
+        if (q.error || !q.data) { loginView("Ce compte (" + shortLogin(session.user.email) + ") n'est relié à aucun membre de l'équipe. Demandez à la réception."); sb.auth.signOut(); return; }
         me = q.data; nav.hidden = false;
         return loadCache().then(function () { route(); listen(); });
       });
@@ -74,8 +85,8 @@
       var b = document.getElementById("pendingCount"); b.hidden = !r.count; b.textContent = r.count || "";
     });
   }
-  document.getElementById("logout").addEventListener("click", function () { sb.auth.signOut().then(function () { location.hash = ""; loginView(); }); });
-  sb.auth.onAuthStateChange(function (ev) { if (ev === "SIGNED_IN" && !me) boot(); });
+  document.getElementById("logout").addEventListener("click", function () { sb.auth.signOut().then(function () { me = null; location.hash = ""; loginView(); }); });
+  document.getElementById("pwd").addEventListener("click", changeMyPassword);
 
   /* ---------- Temps réel (repli : rafraîchissement toutes les 60 s) ---------- */
   var listening = false;
@@ -90,10 +101,10 @@
   var current = "";
   function route() {
     var v = (location.hash || "#agenda").slice(1).split("/")[0];
-    if (!{ agenda: 1, demandes: 1, clients: 1, reglages: 1 }[v]) v = "agenda";
+    if (!{ agenda: 1, demandes: 1, clients: 1, reglages: 1, aide: 1 }[v]) v = "agenda";
     current = v; closePanel();
     nav.querySelectorAll("a[data-view]").forEach(function (a) { a.classList.toggle("on", a.getAttribute("data-view") === v); });
-    ({ agenda: agenda, demandes: demandes, clients: clients, reglages: reglages })[v]();
+    ({ agenda: agenda, demandes: demandes, clients: clients, reglages: reglages, aide: aide })[v]();
   }
   window.addEventListener("hashchange", route);
 
@@ -103,7 +114,9 @@
     app.innerHTML = '<div class="row between"><h1>Agenda</h1><div class="row"><button class="btn" id="newBlock">Fermer un créneau</button><button class="btn solid" id="newOrder">Nouvelle demande</button></div></div>' +
       '<div class="filters"><select id="fStaff"><option value="">Toute l\'équipe</option>' + cache.staff.filter(function (s) { return s.active; }).map(function (s) { return '<option value="' + s.id + '">' + esc(s.name) + " · " + esc(ROLE[s.role] || s.role) + "</option>"; }).join("") + "</select>" +
       '<select id="fRes"><option value="">Toutes les ressources</option>' + cache.resources.map(function (r) { return '<option value="' + r.id + '">' + esc(r.name) + "</option>"; }).join("") + "</select>" +
-      '<select id="fStatus"><option value="">Actifs (en attente + confirmés)</option><option value="all">Tout, refus et annulations compris</option></select></div><div id="cal"></div>';
+      '<select id="fStatus"><option value="">Actifs (en attente + confirmés)</option><option value="all">Tout, refus et annulations compris</option></select></div>' +
+      '<p class="legend">' + ["transfer", "spa", "dinner", "concierge", "block"].map(function (k) { return '<span><i style="background:' + COLOR[k] + '"></i>' + esc(KIND[k]) + "</span>"; }).join("") + "<span>⏳ en attente de votre réponse · cliquez sur un créneau pour accepter, refuser ou écrire au client</span></p>" +
+      '<div id="cal"></div>';
     var el = document.getElementById("cal");
     cal = new FullCalendar.Calendar(el, {
       locale: "fr", timeZone: TZ, initialView: window.innerWidth < 700 ? "listWeek" : "timeGridWeek", height: "auto", nowIndicator: true, firstDay: 1, slotMinTime: "06:00:00", slotMaxTime: "24:00:00",
@@ -254,13 +267,14 @@
   function reglages() {
     var s = cache.settings, bot = s.telegram_bot_username || "<bot>";
     var h = "<h1>Réglages</h1>";
-    h += '<div class="card"><h2>Équipe</h2><p class="small muted">Chaque personne ouvre le bot Telegram une fois avec son lien de liaison ; elle reçoit ensuite ses demandes et ses rappels en privé. L\'e-mail sert à se connecter ici.</p>' +
-      '<table><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>E-mail (connexion)</th><th>Telegram</th><th>Actif</th><th></th></tr></thead><tbody>' +
+    h += '<div class="card"><h2>Équipe</h2><p class="small muted">Pour chaque personne : un identifiant et un mot de passe pour cette appli (bouton « Mot de passe »), et un lien Telegram à ouvrir une fois pour recevoir ses demandes et rappels en privé.</p>' +
+      '<table><thead><tr><th>Nom</th><th>Rôle</th><th>Téléphone</th><th>Identifiant (appli)</th><th>Telegram</th><th>Actif</th><th></th></tr></thead><tbody>' +
       cache.staff.map(function (st) {
-        return '<tr data-staff="' + st.id + '"><td><input name="name" value="' + esc(st.name) + '"></td><td><select name="role">' + Object.keys(ROLE).map(function (r) { return '<option value="' + r + '"' + (st.role === r ? " selected" : "") + ">" + ROLE[r] + "</option>"; }).join("") + '</select></td><td><input name="phone" value="' + esc(st.phone || "") + '"></td><td><input name="email" type="email" value="' + esc(st.email || "") + '"></td>' +
+        return '<tr data-staff="' + st.id + '"><td><input name="name" value="' + esc(st.name) + '"></td><td><select name="role">' + Object.keys(ROLE).map(function (r) { return '<option value="' + r + '"' + (st.role === r ? " selected" : "") + ">" + ROLE[r] + "</option>"; }).join("") + '</select></td><td><input name="phone" value="' + esc(st.phone || "") + '"></td>' +
+          '<td><input name="login" value="' + esc(shortLogin(st.email || "")) + '" placeholder="ex. mouna" autocapitalize="none"><button class="btn sm" data-set-password style="margin-top:4px">Mot de passe</button></td>' +
           "<td>" + (st.telegram_chat_id ? "✅ lié" : '<a class="small" href="https://t.me/' + esc(bot) + "?start=" + esc(st.link_code) + '" target="_blank" rel="noreferrer">lien de liaison</a><br><code class="small">/start ' + esc(st.link_code) + "</code>") + '</td><td><input type="checkbox" name="active"' + (st.active ? " checked" : "") + '></td><td><button class="btn sm" data-save-staff>OK</button><br><a class="small" href="' + FN + "/ical/" + esc(st.ical_token) + '.ics">iCal</a></td></tr>';
       }).join("") + "</tbody></table>" +
-      '<form id="addStaff" class="inline" style="margin-top:12px"><label class="f"><span>Nom</span><input name="name" required></label><label class="f"><span>Rôle</span><select name="role">' + Object.keys(ROLE).map(function (r) { return '<option value="' + r + '">' + ROLE[r] + "</option>"; }).join("") + '</select></label><label class="f"><span>Téléphone</span><input name="phone"></label><label class="f"><span>E-mail</span><input name="email" type="email"></label><button class="btn solid" type="submit">Ajouter</button></form></div>';
+      '<form id="addStaff" class="inline" style="margin-top:12px"><label class="f"><span>Nom</span><input name="name" required></label><label class="f"><span>Rôle</span><select name="role">' + Object.keys(ROLE).map(function (r) { return '<option value="' + r + '">' + ROLE[r] + "</option>"; }).join("") + '</select></label><label class="f"><span>Téléphone</span><input name="phone"></label><button class="btn solid" type="submit">Ajouter</button></form></div>';
     h += '<div class="card"><h2>Ressources</h2><p class="small muted">Exclusif : un seul créneau à la fois (spa, guide). Sinon, la capacité limite le nombre de personnes en même temps (table). Marge : minutes bloquées après chaque créneau.</p>' +
       '<table><thead><tr><th>Nom</th><th>Type</th><th>Exclusif</th><th>Capacité</th><th>Marge</th><th>Personne par défaut</th><th>Actif</th><th></th></tr></thead><tbody>' +
       cache.resources.map(function (r) {
@@ -276,13 +290,22 @@
 
     app.querySelectorAll("[data-save-staff]").forEach(function (b) {
       b.addEventListener("click", function () {
-        var tr = b.closest("tr"), row = { name: tr.querySelector("[name=name]").value, role: tr.querySelector("[name=role]").value, phone: tr.querySelector("[name=phone]").value || null, email: tr.querySelector("[name=email]").value || null, active: tr.querySelector("[name=active]").checked };
+        var tr = b.closest("tr"), row = { name: tr.querySelector("[name=name]").value, role: tr.querySelector("[name=role]").value, phone: tr.querySelector("[name=phone]").value || null, active: tr.querySelector("[name=active]").checked };
         sb.from("staff").update(row).eq("id", tr.getAttribute("data-staff")).then(function (r) { if (r.error) return fail(r.error); toast("Enregistré"); loadCache(); });
+      });
+    });
+    app.querySelectorAll("[data-set-password]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var tr = b.closest("tr"), login = tr.querySelector("[name=login]").value.trim(), name = tr.querySelector("[name=name]").value;
+        if (!login) return toast("Indiquez d'abord un identifiant");
+        var p = prompt("Mot de passe pour " + name + " (identifiant : " + login + ") :"); if (!p) return;
+        b.disabled = true;
+        api("/account", { staffId: tr.getAttribute("data-staff"), username: login, password: p }).then(function (r) { toast("Compte prêt : " + r.login); b.disabled = false; loadCache(); }, function (e) { b.disabled = false; fail(e); });
       });
     });
     document.getElementById("addStaff").addEventListener("submit", function (e) {
       e.preventDefault(); var f = e.target;
-      sb.from("staff").insert({ name: f.name.value, role: f.role.value, phone: f.phone.value || null, email: f.email.value || null }).then(function (r) { if (r.error) return fail(r.error); toast("Ajouté"); loadCache().then(reglages); });
+      sb.from("staff").insert({ name: f.name.value, role: f.role.value, phone: f.phone.value || null }).then(function (r) { if (r.error) return fail(r.error); toast("Ajouté : donnez-lui un identifiant et un mot de passe"); loadCache().then(reglages); });
     });
     app.querySelectorAll("[data-save-res]").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -296,6 +319,20 @@
       sb.from("settings").upsert(rows).then(function (r) { if (r.error) return fail(r.error); toast("Réglages enregistrés"); loadCache(); });
     });
   }
+  /* ---------- Aide ---------- */
+  function aide() {
+    var bot = cache.settings.telegram_bot_username || "KasbahLaMounbot";
+    app.innerHTML = "<h1>Comment ça marche</h1>" +
+      '<div class="card"><h2>1. Le client</h2><p>Il ouvre le guide de bienvenue sur son téléphone, fait son check-in (obligatoire), puis réserve : transfert, spa, dîner, guide ou autre demande. Pour le spa, il ne voit que les créneaux libres. Il suit ensuite le statut de ses demandes dans « Mon séjour ».</p></div>' +
+      '<div class="card"><h2>2. Vous</h2><p>Chaque demande arrive <b>sur Telegram</b> (bot @' + esc(bot) + ') à la personne concernée et à la réception, avec le numéro WhatsApp du client, et apparaît dans <b>Demandes</b> et dans l\'<b>Agenda</b>.</p>' +
+      "<p>Répondre : <b>Accepter</b> ou <b>Refuser</b>, depuis Telegram ou depuis cette appli. Tout se met à jour partout, et le client voit « Confirmé » dans son guide. Le bouton <b>WhatsApp</b> ouvre la conversation avec le client avec un message de confirmation déjà écrit.</p></div>" +
+      '<div class="card"><h2>3. Les rappels</h2><p>Chaque personne reçoit en privé, sur Telegram, un rappel avant son créneau et, le soir, son programme du lendemain. Le groupe reçoit le récapitulatif du lendemain : arrivées, départs, programme.</p></div>' +
+      '<div class="card"><h2>4. Les pages</h2><ul><li><b>Agenda</b> : tous les créneaux ; filtrez par personne ou par ressource ; cliquez sur un créneau pour voir la fiche du client et agir. « Fermer un créneau » bloque le spa, le guide ou la table (repos, entretien). « Nouvelle demande » saisit une demande reçue par téléphone.</li>' +
+      "<li><b>Demandes</b> : ce qui attend une réponse, puis les demandes récentes.</li><li><b>Clients</b> : arrivées et départs du jour, clients présents, recherche par nom ou téléphone.</li>" +
+      "<li><b>Réglages</b> : l'équipe (identifiants, mots de passe, liens Telegram), les ressources et leurs horaires, le groupe Telegram et la Google Sheet.</li></ul></div>" +
+      '<div class="card"><h2>5. Première fois</h2><ol><li>Réglages > Équipe : donnez à chaque personne un identifiant et un mot de passe (bouton « Mot de passe »).</li><li>Chaque personne ouvre son « lien de liaison » Telegram et appuie sur Démarrer.</li><li>Créez le groupe Telegram, ajoutez le bot, tapez /id dans le groupe et reportez le numéro dans Réglages.</li><li>Vérifiez les horaires du spa, de la table et du guide dans Réglages > Ressources > Horaires.</li></ol></div>';
+  }
+
   function hoursForm(resId) {
     var res = cache.resources.find(function (r) { return r.id === resId; });
     sb.from("resource_hours").select("*").eq("resource_id", resId).order("weekday").then(function (r) {
