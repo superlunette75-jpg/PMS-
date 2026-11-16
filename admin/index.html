@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La Moun | Équipe</title>
+<meta name="theme-color" content="#f3efe7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="La Moun Équipe">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.15/index.global.min.css">
+<link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#agenda"><img src="logo-mark.png" alt="" width="36" height="36"><span>Kasbah La Moun · Équipe</span></a>
+  <nav id="nav" hidden>
+    <a href="#agenda" data-view="agenda">Agenda</a>
+    <a href="#demandes" data-view="demandes">Demandes <b id="pendingCount" hidden></b></a>
+    <a href="#clients" data-view="clients">Clients</a>
+    <a href="#reglages" data-view="reglages">Réglages</a>
+    <button type="button" id="logout" class="link">Quitter</button>
+  </nav>
+</header>
+<main id="app"><p class="muted">Chargement…</p></main>
+<div id="panel" class="panel" hidden><div class="panel-inner"></div></div>
+<div id="toast" class="toast" hidden></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.15/index.global.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/6.1.15/locales/fr.min.js"></script>
+<script src="assets/config.js"></script>
+<script src="assets/admin.js"></script>
+</body>
+</html>

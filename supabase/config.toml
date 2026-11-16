@@ -1,0 +1,16 @@
+project_id = "kasbah-la-moun"
+
+[functions.checkin]
+verify_jwt = false
+[functions.order]
+verify_jwt = false
+[functions.availability]
+verify_jwt = false
+[functions.telegram]
+verify_jwt = false
+[functions.remind]
+verify_jwt = false
+[functions.ical]
+verify_jwt = false
+[functions.status]
+verify_jwt = false
