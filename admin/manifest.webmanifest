@@ -1,14 +1,25 @@
 {
+  "id": "./",
   "name": "Kasbah La Moun · Équipe",
   "short_name": "La Moun",
+  "description": "Agenda, demandes des clients, planning et tableau de bord du Riad Kasbah La Moun.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f3efe7",
-  "theme_color": "#f3efe7",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#fbf9f5",
+  "theme_color": "#fbf9f5",
   "lang": "fr",
+  "categories": ["business", "productivity"],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Aujourd'hui", "url": "./#jour", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Demandes", "url": "./#demandes", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] },
+    { "name": "Agenda", "url": "./#agenda", "icons": [{ "src": "icon-192.png", "sizes": "192x192" }] }
   ]
 }

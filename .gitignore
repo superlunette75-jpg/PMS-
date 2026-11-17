@@ -3,3 +3,5 @@ supabase/.temp
 supabase/.env
 *.local.js
 *.local.md
+*.local.html
+*.local.json

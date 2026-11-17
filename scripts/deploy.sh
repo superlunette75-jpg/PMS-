@@ -22,7 +22,7 @@ case "${1:-}" in
     echo "== seed"; sql_file "$ROOT/supabase/seed.sql" ;;
   functions)
     cd "$ROOT"
-    for fn in checkin order availability telegram remind ical status account; do
+    for fn in ${FUNCS:-checkin order availability telegram remind ical status account push}; do
       echo "== $fn"
       args=(-F "metadata={\"name\":\"$fn\",\"entrypoint_path\":\"supabase/functions/$fn/index.ts\",\"verify_jwt\":false};type=application/json")
       for f in supabase/functions/$fn/index.ts supabase/functions/_shared/*.ts; do args+=(-F "file=@$f;filename=$f"); done

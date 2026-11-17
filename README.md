@@ -51,13 +51,23 @@ Refuser → le client suit le statut dans « Mon séjour » → rappels automati
 - `guide/assets/common.js` : `API.base = "https://<ref>.supabase.co/functions/v1"`. Vide, le guide marche comme avant (WhatsApp seul).
 - `admin/assets/config.js` : URL du projet et clé `anon`.
 - Netlify : déployer `guide/` sur le projet existant (onglet Deploys, glisser le dossier) et `admin/` comme nouveau site (ex. `lamoun-equipe.netlify.app`). Ajouter cette URL dans Supabase > Authentication > Redirect URLs.
-- Connexion à l'appli équipe : e-mail présent dans Réglages > Équipe → lien magique reçu par e-mail.
+- Connexion à l'appli équipe : identifiant + mot de passe, créés par un gérant dans Réglages > Équipe (bouton « Mot de passe »).
+- Migrations : `0001_schema.sql` puis `0002_access_dashboard.sql` (niveaux d'accès, tables Little Hotel, notifications push). Les deux se rejouent sans risque.
+- Notifications push : secrets `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` dans Supabase ; la clé publique est aussi dans `admin/assets/config.js`.
 
 ## 2. Au quotidien
 - **Demandes** : chaque nouvelle demande arrive sur Telegram (privé + groupe) et dans Demandes. Accepter / Refuser depuis Telegram ou l'appli : tous les messages se mettent à jour, le client voit le statut dans « Mon séjour ». Le bouton *WhatsApp le client* ouvre la conversation avec un message de confirmation déjà écrit.
 - **Agenda** : filtrer par personne ou ressource ; *Fermer un créneau* bloque le spa, le guide ou la table ; *Nouvelle demande* saisit une demande reçue par téléphone.
 - **Rappels** : à chaque personne, en privé, N minutes avant son créneau ; le soir, programme de demain à chacun et récap (arrivées, départs, programme) dans le groupe.
 - **Calendriers sur téléphone** : Réglages donne un lien iCal par personne et un lien maître (iPhone : Réglages > Calendrier > Comptes > Ajouter un abonnement ; Google Agenda : Autres agendas > À partir de l'URL).
+
+## 2 bis. Accès, tableau de bord, appli installée
+- **Niveaux d'accès** (Réglages > Équipe, colonne Accès) : *Gérant* voit tout, dont le Tableau de bord et la gestion de l'équipe ; *Réception* voit Aujourd'hui, Agenda, Demandes, Clients, sans les paiements ; *Métier* (chauffeur, spa, cuisine, guide, ménage) ne voit que « Mon planning » et ses créneaux. Ces règles sont dans la base (RLS, `0002_access_dashboard.sql`), pas seulement dans l'écran.
+- **Attribuer** une demande à quelqu'un : dans l'agenda, toucher le créneau > « Attribuer à ». La personne la reçoit sur Telegram et en notification.
+- **Aujourd'hui** : le « Morning briefing » du tableau KLM (mêmes couleurs) : arrivées, départs, départs demain, hammam, massages, dîners, transferts, clients présents, puis le planning des 14 jours.
+- **Tableau de bord** (gérants) : chiffre d'affaires, occupation, prix moyen, RevPAR, canaux, pays, suites, encaissements, délai de réservation, soldes à encaisser. Source : exports CSV Little Hotel.
+- **Mettre à jour les chiffres** : Little Hotel > exporter les CSV (Réservations, Paiements, Listing clients) > Tableau de bord > Importer > déposer les fichiers. Réimporter ne crée pas de doublons. Import initial en ligne de commande : `scripts/import_littlehotel.py`.
+- **Installer l'appli** : proposée automatiquement après la connexion sur téléphone (bouton natif sur Android, mode d'emploi illustré sur iPhone). Ensuite « Activer les notifications » (sur iPhone, uniquement depuis l'appli installée, iOS 16.4+).
 
 ## 3. Développement local
 `.claude/launch.json` lance `guide/` sur http://127.0.0.1:8787 et `admin/` sur http://127.0.0.1:8788 (serveur Python intégré). Sans `API.base`, le guide fonctionne en mode WhatsApp ; avec un projet Supabase de test, tout le circuit se teste en local.
@@ -72,4 +82,4 @@ Refuser → le client suit le statut dans « Mon séjour » → rappels automati
 - `superlunette75-jpg/Lamoun-ekip` : le dossier `admin/` seul, relié à Netlify (site lamoun-equip.netlify.app, répertoire de publication `/`, pas de build). Après un commit sur `main` ici, `scripts/push-admin.sh` y pousse la nouvelle version.
 - `superlunette75-jpg/Lamoun-guide` : le dossier `guide/` seul, à relier au projet Netlify du guide (répertoire de publication `/`, pas de build). `scripts/push-guide.sh` y pousse la nouvelle version.
 
-L'appli équipe s'installe comme une appli sur le téléphone : Safari > Partager > Sur l'écran d'accueil (iPhone), ou Chrome > menu > Installer l'application (Android).
+L'appli équipe s'installe comme une appli sur le téléphone : l'appli le propose elle-même après la connexion (voir 2 bis).

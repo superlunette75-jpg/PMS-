@@ -1,5 +1,5 @@
 // POST /account : crée ou met à jour le compte de connexion (identifiant + mot de passe) d'un membre de l'équipe.
-// Appelant : un membre connecté. La réception peut gérer tout le monde ; les autres seulement leur propre mot de passe.
+// Appelant : un membre connecté. Les gérants gèrent tout le monde ; les autres seulement leur propre mot de passe.
 // Corps : { staffId: uuid, username?: "mouna" | "mouna@…", password: "……" }
 // Aucun e-mail n'est envoyé : l'identifiant sans @ devient <identifiant>@kasbahlamoun.app, un simple nom de compte.
 import { json, error, preflight, readJson, str } from "../_shared/http.ts";
@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
   const b = await readJson<{ staffId?: string; username?: string; password?: string }>(req);
   const staffId = str(b.staffId, 40), password = str(b.password, 200);
   if (!/^[0-9a-f-]{36}$/.test(staffId)) return error("input", "Membre inconnu.");
-  if (me.role !== "reception" && me.id !== staffId) return error("auth", "Seule la réception gère les comptes des autres.", 403);
+  if (me.access !== "manager" && me.id !== staffId) return error("auth", "Seuls les gérants gèrent les comptes des autres.", 403);
   if (password.length < 6) return error("password", "Mot de passe : 6 caractères minimum.");
   const { data: st } = await db.from("staff").select("id, name, email").eq("id", staffId).maybeSingle();
   if (!st) return error("input", "Membre inconnu.", 404);

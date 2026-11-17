@@ -3,6 +3,7 @@ import type { Db } from "./supabase.ts";
 import { settingsMap } from "./supabase.ts";
 import { send, edit, esc, waLink, tgEnabled, Button } from "./telegram.ts";
 import { fmtDateTime, fmtDay, frDate } from "./time.ts";
+import { pushTo, officeIds, pushEnabled } from "./push.ts";
 
 export const KIND_LABEL: Record<string, string> = { transfer: "Transfert", spa: "Spa", dinner: "Dîner", concierge: "Conciergerie" };
 export const KIND_EMOJI: Record<string, string> = { transfer: "🚗", spa: "🧖", dinner: "🍽", concierge: "🧭" };
@@ -90,10 +91,33 @@ function buttons(o: any, tz: string): Button[][] {
 }
 
 /* Envoi d'une nouvelle commande : à la personne du métier, à la réception, et au groupe (sujet du métier). */
+/* Résumé court pour une notification push : « 🚗 Transfert · Jean Dupont » / « mar. 18/11 14:30 · Suite 4 ». */
+function pushSummary(o: any, tz: string, prefix = ""): { title: string; body: string } {
+  const g = o.guests || {}; const name = [g.first_name, g.last_name].filter(Boolean).join(" ") || o.details?.guestName || "Client";
+  const ev = (o.events || []).filter((e: any) => e.kind === "order").sort((a: any, b: any) => a.starts_at.localeCompare(b.starts_at))[0];
+  const suite = o.stays?.suite || o.details?.suite;
+  return {
+    title: `${prefix}${KIND_EMOJI[o.kind] || "•"} ${KIND_LABEL[o.kind] || o.kind} · ${name}`,
+    body: [ev ? fmtDateTime(new Date(ev.starts_at), tz) : "", suite ? "Suite " + suite : "", o.status === "pending" ? "à accepter" : STATUS_LABEL[o.status] || ""].filter(Boolean).join(" · "),
+  };
+}
+
+/* Qui doit être prévenu d'une commande : la personne du créneau, sinon le métier, plus la réception et les gérants. */
+async function orderAudience(db: Db, o: any): Promise<string[]> {
+  const assigned = (o.events || []).map((e: any) => e.staff_id).filter(Boolean);
+  let ids = [...assigned];
+  if (!assigned.length) {
+    const { data } = await db.from("staff").select("id").eq("active", true).eq("role", roleFor(o.kind));
+    ids = ids.concat((data || []).map((s: any) => s.id));
+  }
+  return ids.concat(await officeIds(db));
+}
+
 export async function notifyNewOrder(db: Db, orderId: string, extra: string[] = []) {
-  if (!tgEnabled()) return;
   const o = await loadOrder(db, orderId); if (!o) return;
   const s = await settingsMap(db); const tz = s.timezone || "Africa/Casablanca";
+  if (pushEnabled()) await pushTo(db, await orderAudience(db, o), { ...pushSummary(o, tz, "Nouvelle demande · "), url: "#demandes", tag: "order-" + o.id });
+  if (!tgEnabled()) return;
   const html = orderHtml(o, tz, extra); const kb = buttons(o, tz);
   const { data: staff } = await db.from("staff").select("id, role, telegram_chat_id").eq("active", true).not("telegram_chat_id", "is", null)
     .in("role", [roleFor(o.kind), "reception"]);
@@ -126,10 +150,11 @@ export async function applyDecision(db: Db, orderId: string, status: string, sta
 }
 
 export async function notifyCheckin(db: Db, stayId: string) {
-  if (!tgEnabled()) return;
   const { data: st } = await db.from("stays").select("*, guests(*)").eq("id", stayId).maybeSingle(); if (!st) return;
   const s = await settingsMap(db); const g = st.guests || {};
   const name = [g.first_name, g.last_name].filter(Boolean).join(" ");
+  if (pushEnabled()) await pushTo(db, await officeIds(db), { title: "🔑 Check-in en ligne · " + name, body: `Arrivée ${frDate(st.arrival)} · ${st.people} pers.${st.transfer_wish === "yes" ? " · transfert souhaité" : ""}`, url: "#jour", tag: "stay-" + st.id });
+  if (!tgEnabled()) return;
   const L = [
     `🔑 <b>CHECK-IN EN LIGNE</b>`,
     `👤 ${esc(name)}${g.phone_e164 ? " · 📱 " + esc(g.phone_e164) : ""}${g.email ? " · " + esc(g.email) : ""}`,
@@ -146,6 +171,18 @@ export async function notifyCheckin(db: Db, stayId: string) {
   for (const r of staff || []) { const m = await send(r.telegram_chat_id, html, { keyboard: kb }); if (m) rows.push({ staff_id: r.id, chat_id: r.telegram_chat_id, message_id: m.message_id, kind: "checkin" }); }
   if (s.telegram_group_id) { const m = await send(s.telegram_group_id, html, { keyboard: kb, threadId: s.topic_checkin || undefined }); if (m) rows.push({ chat_id: s.telegram_group_id, message_id: m.message_id, kind: "checkin" }); }
   if (rows.length) await db.from("notifications").insert(rows);
+}
+
+/* Attribution d'une commande à un membre (appli équipe) : message privé Telegram avec les boutons, et push. */
+export async function notifyAssigned(db: Db, orderId: string, staffId: string, byName: string) {
+  const o = await loadOrder(db, orderId); if (!o) return;
+  const s = await settingsMap(db); const tz = s.timezone || "Africa/Casablanca";
+  if (pushEnabled()) await pushTo(db, [staffId], { ...pushSummary(o, tz, "Pour vous · "), url: "#planning", tag: "order-" + o.id });
+  if (!tgEnabled()) return;
+  const { data: st } = await db.from("staff").select("telegram_chat_id").eq("id", staffId).maybeSingle();
+  if (!st?.telegram_chat_id) return;
+  const m = await send(st.telegram_chat_id, orderHtml(o, tz, [`👉 Attribué à vous par ${esc(byName)}`]), { keyboard: buttons(o, tz) });
+  if (m) await db.from("notifications").insert({ order_id: o.id, staff_id: staffId, chat_id: st.telegram_chat_id, message_id: m.message_id, kind: "new" });
 }
 
 export { fmtDay };

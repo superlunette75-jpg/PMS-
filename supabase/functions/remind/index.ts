@@ -5,7 +5,8 @@
 import { json, error } from "../_shared/http.ts";
 import { serviceClient, settingsMap, Db } from "../_shared/supabase.ts";
 import { send, esc } from "../_shared/telegram.ts";
-import { KIND_EMOJI } from "../_shared/notify.ts";
+import { KIND_EMOJI, KIND_LABEL } from "../_shared/notify.ts";
+import { pushTo } from "../_shared/push.ts";
 import { zonedToUtc, addMin, fmtTime, localDate, localHour, frDate } from "../_shared/time.ts";
 
 function line(e: any, tz: string): string {
@@ -22,10 +23,13 @@ async function soon(db: Db, tz: string, beforeMin: number) {
   for (const e of data || []) {
     const { data: done } = await db.from("notifications").select("id").eq("event_id", e.id).eq("staff_id", e.staff_id).eq("kind", "reminder_1h").maybeSingle();
     if (done) continue;
+    const mins = Math.max(1, Math.round((new Date(e.starts_at).getTime() - now.getTime()) / 60000));
+    const g = (e as any).orders?.guests; const who = g ? [g.first_name, g.last_name].filter(Boolean).join(" ") : "";
+    const pushed = await pushTo(db, [e.staff_id], { title: `⏰ Dans ${mins} min · ${KIND_LABEL[(e as any).orders?.kind] || e.title}`, body: [e.title, who, (e as any).orders?.stays?.suite ? "Suite " + (e as any).orders.stays.suite : ""].filter(Boolean).join(" · "), url: "#planning", tag: "ev-" + e.id });
     const { data: st } = await db.from("staff").select("telegram_chat_id").eq("id", e.staff_id).maybeSingle();
-    if (!st?.telegram_chat_id) continue;
-    const m = await send(st.telegram_chat_id, `⏰ <b>Dans ${Math.max(1, Math.round((new Date(e.starts_at).getTime() - now.getTime()) / 60000))} min</b>\n${line(e, tz)}`);
-    await db.from("notifications").insert({ event_id: e.id, staff_id: e.staff_id, chat_id: st.telegram_chat_id, message_id: m?.message_id || null, kind: "reminder_1h" });
+    if (!st?.telegram_chat_id && !pushed) continue;
+    const m = st?.telegram_chat_id ? await send(st.telegram_chat_id, `⏰ <b>Dans ${mins} min</b>\n${line(e, tz)}`) : null;
+    await db.from("notifications").insert({ event_id: e.id, staff_id: e.staff_id, chat_id: st?.telegram_chat_id || null, message_id: m?.message_id || null, kind: "reminder_1h" });
     sent++;
   }
   return sent;
