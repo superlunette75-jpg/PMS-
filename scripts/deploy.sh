@@ -22,7 +22,7 @@ case "${1:-}" in
     echo "== seed"; sql_file "$ROOT/supabase/seed.sql" ;;
   functions)
     cd "$ROOT"
-    for fn in ${FUNCS:-checkin order availability telegram remind ical status account push}; do
+    for fn in ${FUNCS:-checkin order availability telegram remind ical status account push octorate}; do
       echo "== $fn"
       args=(-F "metadata={\"name\":\"$fn\",\"entrypoint_path\":\"supabase/functions/$fn/index.ts\",\"verify_jwt\":false};type=application/json")
       for f in supabase/functions/$fn/index.ts supabase/functions/_shared/*.ts; do args+=(-F "file=@$f;filename=$f"); done
@@ -38,6 +38,11 @@ create extension if not exists pg_cron; create extension if not exists pg_net;
 select cron.unschedule('lamoun-remind') where exists (select 1 from cron.job where jobname = 'lamoun-remind');
 select cron.schedule('lamoun-remind', '*/15 * * * *', \$\$
   select net.http_post(url := 'https://$REF.supabase.co/functions/v1/remind',
+    headers := '{"Content-Type":"application/json","x-cron-secret":"$SECRET"}'::jsonb, body := '{}'::jsonb);
+\$\$);
+select cron.unschedule('lamoun-ical') where exists (select 1 from cron.job where jobname = 'lamoun-ical');
+select cron.schedule('lamoun-ical', '7 * * * *', \$\$
+  select net.http_post(url := 'https://$REF.supabase.co/functions/v1/octorate?action=ical',
     headers := '{"Content-Type":"application/json","x-cron-secret":"$SECRET"}'::jsonb, body := '{}'::jsonb);
 \$\$);
 EOF

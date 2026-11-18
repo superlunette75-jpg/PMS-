@@ -288,9 +288,11 @@
           return '<label class="f"><span>' + x[1] + '</span><input name="' + x[0] + '" value="' + esc(s[x[0]] || "") + '"></label>';
         }).join("") + '<button class="btn solid" type="submit">Enregistrer</button></form>' +
         '<p class="small muted" style="margin-top:10px">Calendrier maître (iCal) : <code>' + LM.FN + "/ical/" + esc(s.master_ical_token || "") + ".ics</code></p></div>";
+      h += '<div class="card" id="octCard"></div>';
     }
     app.innerHTML = h;
     if (LM.pwa) LM.pwa.settingsCard(document.getElementById("pwaCard"));
+    if (LM.octorateCard) LM.octorateCard(document.getElementById("octCard"));
 
     app.querySelectorAll("[data-save-staff]").forEach(function (b) {
       b.addEventListener("click", function () {

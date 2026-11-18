@@ -5,7 +5,7 @@
   var LM = window.LM; if (!LM || !LM.sb) return;
   var sb = LM.sb, esc = LM.esc, app = LM.app;
   var CANCELLED = "Paiement annulé";
-  var CHANNEL = { "Booking.com": "Booking.com", "Expedia": "Expedia", "Extranet": "Extranet (direct, agences)", "Mobile App": "Little Hotel (appli mobile)", "Direct Booking": "Site du riad (direct)", "Hotelbeds": "Hotelbeds" };
+  var CHANNEL = { "Booking.com": "Booking.com", "Expedia": "Expedia", "Extranet": "Extranet (direct, agences)", "Mobile App": "Little Hotel (appli mobile)", "Direct Booking": "Site du riad (direct)", "Hotelbeds": "Hotelbeds", "Octorate": "Octorate", "iCal": "Calendrier iCal", "Airbnb": "Airbnb", "Agoda": "Agoda", "Trip.com": "Trip.com", "Google": "Google" };
   function isHammam(label) { return /hammam|gommage|ghassoul|savon|rituel/i.test(label || ""); }
   function localDay(iso) { return new Intl.DateTimeFormat("en-CA", { timeZone: LM.TZ }).format(new Date(iso)); }
   function lname(s) { return String(s || "").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, ""); }
@@ -51,7 +51,7 @@
         var covers = dinner.reduce(function (n, x) { return n + (Number(x.o.details && x.o.details.guests) || 0); }, 0);
         function sumPax(list) { return list.reduce(function (n, x) { return n + (x.adults || 0) + (x.children || 0); }, 0); }
 
-        var h = LM.head("Aujourd'hui", esc(new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: LM.TZ }).format(new Date()).replace(/^./, function (c) { return c.toUpperCase(); })) + " · réservations Little Hotel" + (lastImport ? " importées le " + LM.fmt(lastImport.imported_at, { weekday: undefined }) : "") + ", demandes en direct.", '<button class="btn solid" id="newOrderJ">Nouvelle demande</button>');
+        var h = LM.head("Aujourd'hui", esc(new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long", timeZone: LM.TZ }).format(new Date()).replace(/^./, function (c) { return c.toUpperCase(); })) + " · réservations Octorate et Little Hotel, demandes en direct.", '<button class="btn solid" id="newOrderJ">Nouvelle demande</button>');
         if (LM.pwa) h += LM.pwa.bannerHtml();
         h += '<div class="brief">' +
           tile("in", ins.length, "Arrivées", sumPax(ins) + " pers.", "#lane-in") + tile("out", outs.length, "Départs", "aujourd'hui", "#lane-out") + tile("out2", outs1.length, "Départs demain", sumPax(outs1) + " pers.", "#lane-out2") +
@@ -252,7 +252,7 @@
     function render() {
       var range = periodRange(state.p, state.custom), c = compute(range), t = LM.today();
       var imp = DATA.imports[0];
-      var h = LM.head("Tableau de bord", "Du " + LM.fmtDay(c.from) + " au " + LM.fmtDay(c.to) + " · " + LM.num(DATA.res.length) + " réservations Little Hotel" + (imp ? ", dernier import le " + LM.fmt(imp.imported_at, { weekday: undefined }) : ""), '<button class="btn" id="imp">' + LM.icon("upload") + " Importer CSV</button>");
+      var h = LM.head("Tableau de bord", "Du " + LM.fmtDay(c.from) + " au " + LM.fmtDay(c.to) + " · " + LM.num(DATA.res.length) + " réservations" + (imp ? ", dernier import Little Hotel le " + LM.fmt(imp.imported_at, { weekday: undefined }) : ""), '<button class="btn" id="imp">' + LM.icon("upload") + " Importer CSV</button>");
       h += '<div class="row" style="margin-bottom:14px;gap:8px"><div class="seg" role="tablist">' + [["month", "Ce mois"], ["prev", "Mois dernier"], ["year", "Année " + t.slice(0, 4)], ["12m", "12 derniers mois"], ["90", "90 prochains jours"], ["next", "Année " + (Number(t.slice(0, 4)) + 1)], ["custom", "Dates…"]].map(function (x) { return '<button data-p="' + x[0] + '" class="' + (state.p === x[0] ? "on" : "") + '">' + x[1] + "</button>"; }).join("") + "</div>" +
         (state.p === "custom" ? '<input type="date" class="input" id="cFrom" value="' + state.custom[0] + '" style="width:auto"><input type="date" class="input" id="cTo" value="' + state.custom[1] + '" style="width:auto">' : "") + "</div>";
       var futureShare = c.rev ? (c.rev - c.revPast) / c.rev : 0;

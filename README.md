@@ -69,6 +69,13 @@ Refuser → le client suit le statut dans « Mon séjour » → rappels automati
 - **Mettre à jour les chiffres** : Little Hotel > exporter les CSV (Réservations, Paiements, Listing clients) > Tableau de bord > Importer > déposer les fichiers. Réimporter ne crée pas de doublons. Import initial en ligne de commande : `scripts/import_littlehotel.py`.
 - **Installer l'appli** : proposée automatiquement après la connexion sur téléphone (bouton natif sur Android, mode d'emploi illustré sur iPhone). Ensuite « Activer les notifications » (sur iPhone, uniquement depuis l'appli installée, iOS 16.4+).
 
+## 2 ter. Réservations Octorate (depuis novembre 2026)
+- **E-mails** : chaque e-mail Octorate (nouvelle réservation, modification, annulation) est transmis par un petit script Google Apps Script installé sur la boîte Gmail qui les reçoit (`docs/octorate-gmail-apps-script.gs` ; l'appli donne le script prêt à coller avec son code secret : Réglages > Octorate). La fonction `octorate?action=mail` garde l'e-mail, le lit (`_shared/octorate.ts`), crée ou met à jour la réservation dans `lh_reservations` (colonne `source = octorate-mail`) et prévient l'équipe (notification + groupe Telegram).
+- Les références Booking et Expedia prennent la forme Little Hotel (`BDC-…`, `EXP-…`) pour éviter les doublons ; les autres `OCT-…`. Les montants en euros sont gardés à part (colonne `currency`) et ne sont pas ajoutés au chiffre d'affaires en dirhams.
+- Un e-mail mal compris reste « à vérifier » dans Réglages > Octorate, avec son texte complet et un bouton « Réanalyser ».
+- **iCal** : un lien d'export par suite (Réglages > Octorate). Synchronisation toutes les heures (`pg_cron` job `lamoun-ical`) : complète la suite des réservations venues par e-mail, ajoute les séjours inconnus (`source = ical`), annule ceux qui disparaissent du calendrier. Les fermetures (« Not available », « Closed ») sont ignorées.
+- Migration : `0003_octorate.sql`.
+
 ## 3. Développement local
 `.claude/launch.json` lance `guide/` sur http://127.0.0.1:8787 et `admin/` sur http://127.0.0.1:8788 (serveur Python intégré). Sans `API.base`, le guide fonctionne en mode WhatsApp ; avec un projet Supabase de test, tout le circuit se teste en local.
 

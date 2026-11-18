@@ -164,6 +164,7 @@ table.plan td.wrap{white-space:normal;min-width:160px}
 .imp-list li{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13.5px;overflow-wrap:anywhere}
 .imp-list li b{display:block;font-weight:500}
 .imp-list li.skip{color:var(--muted)}
+.kv{display:grid;grid-template-columns:minmax(100px,130px) 1fr;gap:7px 12px;font-size:14px;margin-top:8px}.kv span{color:var(--slate);font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding-top:2px}.kv b{font-weight:500;overflow-wrap:anywhere}
 .drop.over{border-color:var(--slate);background:#f6f3ec}
 
 /* ---------- Planning métier ---------- */
