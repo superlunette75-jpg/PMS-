@@ -88,8 +88,8 @@
     if (!rooms) return "";
     return String(rooms).split(",").map(function (r) { r = r.trim(); if (/deluxe/i.test(r)) return "1"; var m = /(\d+)\s*$/.exec(r); return m ? m[1] : r; }).filter(Boolean).join(" · ");
   };
-  LM.openPanel = function (html) { panel.querySelector(".panel-inner").innerHTML = '<button type="button" class="btn sm close" data-close>Fermer</button>' + html; panel.hidden = false; panel.querySelector(".panel-inner").scrollTop = 0; return panel; };
-  LM.closePanel = function () { panel.hidden = true; };
+  LM.openPanel = function (html) { panel.querySelector(".panel-inner").innerHTML = '<button type="button" class="btn sm close" data-close>Fermer</button>' + html; panel.hidden = false; document.body.classList.add("locked"); panel.querySelector(".panel-inner").scrollTop = 0; return panel; };
+  LM.closePanel = function () { panel.hidden = true; document.body.classList.remove("locked"); };
   panel.addEventListener("click", function (e) { if (e.target === panel || e.target.closest("[data-close]")) LM.closePanel(); });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") LM.closePanel(); });
 
