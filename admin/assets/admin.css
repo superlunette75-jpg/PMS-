@@ -94,7 +94,8 @@ code{font-size:13px;background:#fff;padding:2px 6px;border:1px solid var(--line)
 /* ---------- Panneau, toast, connexion ---------- */
 .panel{position:fixed;inset:0;z-index:30;background:rgba(31,36,38,.45);display:flex;justify-content:flex-end}
 .panel-inner{width:min(480px,100%);height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;touch-action:pan-y;background:var(--paper);padding:18px;padding-bottom:calc(18px + env(safe-area-inset-bottom));box-shadow:-8px 0 30px rgba(0,0,0,.15)}
-.panel .close{float:right;margin-left:8px}
+.panel .close{float:right;margin:0 0 10px 12px;position:relative;z-index:1}
+.panel-inner>h2{margin-top:4px;overflow-wrap:anywhere}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:40;background:var(--slate-deep);color:var(--paper);padding:10px 16px;border-radius:999px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:calc(100% - 32px);text-align:center}
 .login{max-width:420px;margin:8vh auto}.login .logo{width:64px;height:64px;border-radius:50%;display:block;margin:0 auto 12px}
 .login h1{text-align:center}
@@ -155,7 +156,14 @@ table.plan td.wrap{white-space:normal;min-width:160px}
 .hbar .val small{color:var(--muted)}
 .hbars{gap:12px}
 .lgd{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin:2px 0 8px}.lgd i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.drop{border:2px dashed var(--line-strong);border-radius:var(--radius);padding:22px;text-align:center;background:#fff;cursor:pointer}
+.drop{display:flex;flex-direction:column;align-items:center;gap:6px;clear:both;width:100%;border:2px dashed var(--line-strong);border-radius:12px;padding:22px 16px;text-align:center;background:#fff;cursor:pointer;color:var(--slate-deep)}
+.drop svg{width:28px;height:28px;fill:none;stroke:var(--slate);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.drop b{font-weight:500;font-size:15.5px}
+.imp-steps{margin:0 0 14px;padding-inline-start:20px;font-size:14px;display:grid;gap:4px}
+.imp-list{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:8px}
+.imp-list li{background:#fff;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:13.5px;overflow-wrap:anywhere}
+.imp-list li b{display:block;font-weight:500}
+.imp-list li.skip{color:var(--muted)}
 .drop.over{border-color:var(--slate);background:#f6f3ec}
 
 /* ---------- Planning métier ---------- */

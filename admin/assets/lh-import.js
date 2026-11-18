@@ -38,7 +38,7 @@
     if (h.indexOf("Payment Method") >= 0) return "summary";
     return "unknown";
   }
-  var LABEL = { reservations: "Réservations", payments: "Paiements", guests: "Listing clients", arrivals: "Arrivées / départs (déjà inclus dans Réservations, ignoré)", summary: "Résumé des paiements (recalculé automatiquement, ignoré)", unknown: "Format non reconnu, ignoré" };
+  var LABEL = { reservations: "Réservations", payments: "Paiements", guests: "Listing clients", arrivals: "Arrivées / départs : déjà inclus, ignoré", summary: "Résumé des paiements : recalculé, ignoré", unknown: "Format non reconnu, ignoré" };
 
   function mapRes(rows) {
     return rows.map(function (r) {
@@ -79,8 +79,10 @@
   }
 
   LM.lhImport = function () {
-    LM.openPanel("<h2>Importer Little Hotel</h2><p class='small muted'>Dans Little Hotel : Rapports > exporter en CSV, puis déposez les fichiers ici. Utile : <b>Réservations</b> (de préférence de l'année passée à fin de l'année prochaine), <b>Paiements</b>, <b>Listing clients</b>. Rien n'est doublé : les réservations sont mises à jour par référence.</p>" +
-      '<label class="drop" id="drop"><input type="file" id="files" accept=".csv,text/csv" multiple hidden><b>Choisir ou déposer les fichiers CSV</b><br><span class="small muted">plusieurs fichiers à la fois</span></label><div id="impOut" style="margin-top:12px"></div>');
+    LM.openPanel("<h2>Importer CSV</h2><p class='small muted'>Les chiffres du tableau de bord viennent des exports de Little Hotel.</p>" +
+      "<ol class='imp-steps'><li>Little Hotel : <b>Rapports</b>, exporter en <b>CSV</b>.</li><li>Utiles : <b>Réservations</b> (idéalement de l'an dernier à fin de l'an prochain), <b>Paiements</b>, <b>Listing clients</b>.</li><li>Choisissez les fichiers ci-dessous, tous en une fois.</li></ol>" +
+      '<label class="drop" id="drop"><input type="file" id="files" accept=".csv,text/csv" multiple hidden>' + LM.icon("upload") + '<b>Choisir les fichiers CSV</b><span class="small muted">plusieurs à la fois · sur ordinateur, vous pouvez aussi les glisser ici</span></label>' +
+      "<p class='tiny muted' style='margin:10px 0 0'>Rien n'est doublé : une réservation déjà importée est simplement mise à jour.</p><div id=\"impOut\" style=\"margin-top:12px\"></div>");
     var drop = document.getElementById("drop"), input = document.getElementById("files"), out = document.getElementById("impOut");
     ["dragenter", "dragover"].forEach(function (e) { drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.add("over"); }); });
     ["dragleave", "drop"].forEach(function (e) { drop.addEventListener(e, function (ev) { ev.preventDefault(); drop.classList.remove("over"); }); });
@@ -92,8 +94,9 @@
       Promise.all(files.map(function (f) { return f.text().then(function (t) { var rows = parseCSV(t); return { name: f.name, rows: rows, kind: kindOf(rows) }; }); })).then(function (parsed) {
         var order = { reservations: 0, payments: 1, guests: 2 };
         parsed.sort(function (a, b) { return (order[a.kind] == null ? 9 : order[a.kind]) - (order[b.kind] == null ? 9 : order[b.kind]); });
-        out.innerHTML = "<ul class='small'>" + parsed.map(function (p) { return "<li><b>" + esc(p.name) + "</b> : " + esc(LABEL[p.kind]) + (order[p.kind] != null ? " · " + p.rows.length + " lignes" : "") + "</li>"; }).join("") + "</ul>" +
-          (parsed.some(function (p) { return order[p.kind] != null; }) ? '<button class="btn solid" id="goImp">Importer</button>' : "<p class='small'>Aucun fichier utile.</p>");
+        out.innerHTML = "<ul class='imp-list'>" + parsed.map(function (p) { var ok = order[p.kind] != null; return "<li" + (ok ? "" : " class='skip'") + "><b>" + (ok ? "✅ " : "➖ ") + esc(LABEL[p.kind]) + (ok ? " · " + p.rows.length + " ligne" + (p.rows.length > 1 ? "s" : "") : "") + "</b>" + esc(p.name) + "</li>"; }).join("") + "</ul>" +
+          (parsed.some(function (p) { return order[p.kind] != null; }) ? '<button class="btn solid" id="goImp" style="width:100%">Importer</button>' : "<p class='small'>Aucun fichier utile.</p>");
+        out.scrollIntoView({ behavior: "smooth", block: "nearest" });
         var go = document.getElementById("goImp"); if (!go) return;
         go.addEventListener("click", function () {
           go.disabled = true; go.textContent = "Import en cours…";

@@ -252,7 +252,7 @@
     function render() {
       var range = periodRange(state.p, state.custom), c = compute(range), t = LM.today();
       var imp = DATA.imports[0];
-      var h = LM.head("Tableau de bord", "Du " + LM.fmtDay(c.from) + " au " + LM.fmtDay(c.to) + " · " + LM.num(DATA.res.length) + " réservations Little Hotel" + (imp ? ", dernier import le " + LM.fmt(imp.imported_at, { weekday: undefined }) : ""), '<button class="btn" id="imp">' + LM.icon("upload") + " Importer Little Hotel</button>");
+      var h = LM.head("Tableau de bord", "Du " + LM.fmtDay(c.from) + " au " + LM.fmtDay(c.to) + " · " + LM.num(DATA.res.length) + " réservations Little Hotel" + (imp ? ", dernier import le " + LM.fmt(imp.imported_at, { weekday: undefined }) : ""), '<button class="btn" id="imp">' + LM.icon("upload") + " Importer CSV</button>");
       h += '<div class="row" style="margin-bottom:14px;gap:8px"><div class="seg" role="tablist">' + [["month", "Ce mois"], ["prev", "Mois dernier"], ["year", "Année " + t.slice(0, 4)], ["12m", "12 derniers mois"], ["90", "90 prochains jours"], ["next", "Année " + (Number(t.slice(0, 4)) + 1)], ["custom", "Dates…"]].map(function (x) { return '<button data-p="' + x[0] + '" class="' + (state.p === x[0] ? "on" : "") + '">' + x[1] + "</button>"; }).join("") + "</div>" +
         (state.p === "custom" ? '<input type="date" class="input" id="cFrom" value="' + state.custom[0] + '" style="width:auto"><input type="date" class="input" id="cTo" value="' + state.custom[1] + '" style="width:auto">' : "") + "</div>";
       var futureShare = c.rev ? (c.rev - c.revPast) / c.rev : 0;
